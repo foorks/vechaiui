@@ -4,7 +4,7 @@ import * as React from "react";
 
 interface IPageProps extends DefaultProps {
   page: number;
-  active?: boolean;
+  selected?: boolean;
   children?: React.ReactNode;
 }
 
@@ -13,21 +13,15 @@ export interface PageProps
     IPageProps {}
 
 export const Page = (props: PageProps) => {
-  const { page, active, className, children, ...rest } = props;
+  const { page, selected, className, children, ...rest } = props;
 
   return (
-    <a
-      className={cx(
-        "inline-flex items-center min-w-8 justify-center px-2.5 py-1.5 h-8 leading-4 text-sm text-center rounded-md border border-transparent whitespace-nowrap transition-colors duration-150 ease-in-out cursor-base",
-        active
-          ? "text-gray-900 hover:border-gray-200"
-          : "bg-blue-500 text-white",
-        className
-      )}
+    <button
+      className={cx("page", selected ? "page-selected" : "", className)}
       aria-label={`Page ${page}`}
       {...rest}
     >
       {children}
-    </a>
+    </button>
   );
 };

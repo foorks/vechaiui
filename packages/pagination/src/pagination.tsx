@@ -4,11 +4,13 @@ import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
 
 import { Page } from "./page";
+import { usePagination } from "./use-pagination";
 
 interface IPaginationProps extends DefaultProps {
   pageCount?: number;
   currentPage?: number;
-  onPageChange?: (e?: React.MouseEvent, page?: number) => void;
+  defaultCurrentPage?: number;
+  onPageChange?: (e: React.ChangeEvent<unknown>, page: number) => void;
   showPages?: boolean;
 }
 
@@ -22,7 +24,8 @@ export const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
   (
     {
       className,
-      currentPage: _currentPage = 0,
+      currentPage,
+      defaultCurrentPage,
       pageCount = 0,
       onPageChange = noop,
       showPages = true,
@@ -30,60 +33,69 @@ export const Pagination = React.forwardRef<HTMLElement, PaginationProps>(
     },
     ref
   ) => {
-    const [currentPage, setCurrentPage] = useState(_currentPage);
+    const { items } = usePagination({
+      count: pageCount,
+      defaultPage: defaultCurrentPage,
+      page: currentPage,
+      onChange: onPageChange,
+    });
 
-    useEffect(() => {
-      setCurrentPage(_currentPage);
-    }, [_currentPage]);
-
-    const handlePageClick = useCallback(
-      (page: number) => (e: React.MouseEvent) => {
-        setCurrentPage(page);
-        onPageChange(e, page);
-      },
-      [onPageChange, setCurrentPage]
-    );
-
-    const renderPages = useCallback(() => {
-      let listPage = [];
-
-      if (pageCount > 0) {
-        let i = 0;
-        let endPage;
-        if (pageCount <= 9) {
-          i = 0;
-          endPage = pageCount;
-        } else {
-          if (currentPage <= 4) {
-            i = 0;
-            endPage = 9;
-          } else if (currentPage + 4 >= pageCount) {
-            i = pageCount - 9;
-            endPage = pageCount;
-          } else {
-            i = currentPage - 4;
-            endPage = currentPage + 5;
-          }
-        }
-
-        for (i; i < endPage; i++) {
-          const active = i === currentPage;
-
-          listPage.push(
-            <Page key={i} page={i} onClick={handlePageClick(i)} active={active}>
-              {i + 1}
-            </Page>
-          );
-        }
+    const elements = items.map(({ page, type, selected, ...item }, idx) => {
+      if (type === "start-ellipsis" || type === "end-ellipsis") {
+        return (
+          <span key={idx} className="page-ellipsis">
+            ...
+          </span>
+        );
+      } else if (type === "page") {
+        return (
+          <Page key={idx} {...item} page={page} selected={selected}>
+            {page}
+          </Page>
+        );
+      } else if (type === "previous") {
+        return (
+          <button key={idx} {...item} className="page-previous">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              width="16"
+              height="16"
+              className="mr-1 fill-current"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.78 12.78a.75.75 0 01-1.06 0L4.47 8.53a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 1.06L6.06 8l3.72 3.72a.75.75 0 010 1.06z"
+              ></path>
+            </svg>
+            Previous
+          </button>
+        );
+      } else if (type === "next") {
+        return (
+          <button key={idx} {...item} className="page-next">
+            Next
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              width="16"
+              height="16"
+              className="ml-1 fill-current"
+            >
+              <path
+                fillRule="evenodd"
+                d="M6.22 3.22a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 010-1.06z"
+              ></path>
+            </svg>
+          </button>
+        );
       }
-      return listPage;
-    }, [pageCount, handlePageClick]);
-
-    const elements = renderPages();
+      return null;
+    });
 
     return (
       <nav className={cx("my-4 text-center", className)} ref={ref}>
-        <div className="inline-flex items-center space-x-1">{elements}</div>
+        <div className="pagination">{elements}</div>
       </nav>
     );
   }

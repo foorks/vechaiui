@@ -10,6 +10,6 @@ export default {
 
 export const basic = () => (
   <div className="flex space-x-6">
-    
+    <Pagination pageCount={15} defaultCurrentPage={2} />
   </div>
 );

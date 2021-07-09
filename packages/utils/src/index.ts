@@ -7,5 +7,6 @@ export * from "./walk-object";
 export * from "./object";
 export * from "./children";
 export * from "./refs";
+export * from "./use-controlled";
 export { cx };
 
